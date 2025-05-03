@@ -5,30 +5,37 @@ from character import Character
 pygame.init()
 
 screen = pygame.display.set_mode((constants.SCREEN_WIDTH, constants.SCREEN_HEIGHT))
-pygame.display.set_caption("Dungeon Crawler")
+pygame.display.set_caption("Vault Of Valor")
 
-#create clock for maintaining frame rate
 clock = pygame.time.Clock()
 
-#define player movement variables
 moving_left = False
 moving_right = False
 moving_up = False
 moving_down = False
 
-#create player
-player = Character(100, 100)
+def scale_img(image, scale):
+  w = image.get_width()
+  h = image.get_height()
+  return pygame.transform.scale(image, (w * scale, h * scale))
 
-#main game loop
+animation_list = []
+for i in range(4):
+  img = pygame.image.load(f"assets/images/characters/elf/idle/{i}.png").convert_alpha()
+  img = scale_img(img, constants.SCALE)
+  animation_list.append(img)
+
+
+player = Character(100, 100, animation_list)
+
+
 run = True
 while run:
 
-  # control frame rate
   clock.tick(constants.FPS)
 
   screen.fill(constants.BG)
 
-  # calculate player movement
   dx = 0
   dy = 0
   if moving_right == True:
@@ -40,17 +47,17 @@ while run:
   if moving_down == True:
     dy = constants.SPEED
 
-    # move player
-    player.move(dx, dy)
 
-  #draw player on screen
+  player.move(dx, dy)
+
+  player.update()
+
   player.draw(screen)
 
-  #event handler
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
       run = False
-      # take keyboard presses
+
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_a:
         moving_left = True
@@ -61,7 +68,6 @@ while run:
       if event.key == pygame.K_s:
         moving_down = True
 
-      # keyboard button released
     if event.type == pygame.KEYUP:
       if event.key == pygame.K_a:
         moving_left = False
