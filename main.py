@@ -15,6 +15,8 @@ moving_right = False
 moving_up = False
 moving_down = False
 
+font = pygame.font.Font("assets/fonts/AtariClassic.ttf", 20)
+
 def scale_img(image, scale):
   w = image.get_width()
   h = image.get_height()
@@ -42,10 +44,32 @@ for mob in mob_types:
   mob_animations.append(animation_list)
 
 
-player = Character(100, 100, mob_animations, 0)
+class DamageText(pygame.sprite.Sprite):
+  def __init__(self, x, y, damage, color):
+    pygame.sprite.Sprite.__init__(self)
+    self.image = font.render(damage, True, color)
+    self.rect = self.image.get_rect()
+    self.rect.center = (x, y)
+    self.counter = 0
+
+  def update(self):
+    #move damage text up
+    self.rect.y -= 1
+    self.counter += 1
+    if self.counter > 30:
+      self.kill()
+
+
+player = Character(100, 100, 100, mob_animations, 0)
+
+enemy = Character(200, 300, 100, mob_animations, 1)
 
 bow = Weapon(bow_image,arrow_image)
 
+enemy_list = []
+enemy_list.append(enemy)
+
+damage_text_group = pygame.sprite.Group()
 arrow_group = pygame.sprite.Group()
 
 run = True
@@ -69,17 +93,26 @@ while run:
 
   player.move(dx, dy)
 
+  for enemy in enemy_list:
+    enemy.update()
   player.update()
   arrow = bow.update(player)
   if arrow:
     arrow_group.add(arrow)
   for arrow in arrow_group:
-    arrow.update()
+    damage, damage_pos = arrow.update(enemy_list)
+    if damage:
+      damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
+      damage_text_group.add(damage_text)
+  damage_text_group.update()
 
+  for enemy in enemy_list:
+    enemy.draw(screen)
   player.draw(screen)
   bow.draw(screen)
   for arrow in arrow_group:
     arrow.draw(screen)
+  damage_text_group.draw(screen)
 
   for event in pygame.event.get():
     if event.type == pygame.QUIT:
