@@ -14,6 +14,7 @@ pygame.display.set_caption("Vault Of Valor")
 clock = pygame.time.Clock()
 
 level = 1
+scren_scroll = [0, 0]
 
 moving_left = False
 moving_right = False
@@ -41,6 +42,9 @@ for x in range(4):
 
 red_potion = scale_img(pygame.image.load("assets/images/items/potion_red.png").convert_alpha(), constants.POTION_SCALE)
 
+item_images = []
+item_images.append(coin_images)
+item_images.append(red_potion)
 
 
 bow_image = scale_img(pygame.image.load("assets/images/weapons/bow.png").convert_alpha(), constants.WEAPON_SCALE)
@@ -89,7 +93,7 @@ def draw_info():
     else:
       screen.blit(heart_empty, (10 + i * 50, 0))
 
-
+  draw_text("LEVEL: " + str(level), font, constants.WHITE, constants.SCREEN_WIDTH / 2, 15)
   draw_text(f"X{player.score}", font, constants.WHITE, constants.SCREEN_WIDTH - 100, 15)
 
 world_data = []
@@ -104,7 +108,7 @@ with open(f"levels/level{level}_data.csv", newline="") as csvfile:
       world_data[x][y] = int(tile)
 
 world = World()
-world.process_data(world_data, tile_list)
+world.process_data(world_data, tile_list, item_images, mob_animations)
 
 
 
@@ -117,42 +121,36 @@ class DamageText(pygame.sprite.Sprite):
     self.counter = 0
 
   def update(self):
+    self.rect.x += screen_scroll[0]
+    self.rect.y += screen_scroll[1]
 
     self.rect.y -= 1
     self.counter += 1
     if self.counter > 30:
       self.kill()
 
+player = world.player
+bow = Weapon(bow_image, arrow_image)
+enemy_list = world.character_list
 
-player = Character(100, 100, 100, mob_animations, 0)
-
-enemy = Character(200, 300, 100, mob_animations, 1)
-
-bow = Weapon(bow_image,arrow_image)
-
-enemy_list = []
-enemy_list.append(enemy)
 
 damage_text_group = pygame.sprite.Group()
 arrow_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 
 
-score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images)
+score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images,True)
 item_group.add(score_coin)
-
-potion = Item(200, 200, 1, [red_potion])
-item_group.add(potion)
-coin = Item(400, 400, 0, coin_images)
-item_group.add(coin)
-
+for item in world.item_list:
+  item_group.add(item)
 
 run = True
 while run:
 
-  clock.tick(constants.FPS)
 
+  clock.tick(constants.FPS)
   screen.fill(constants.BG)
+
 
   dx = 0
   dy = 0
@@ -166,21 +164,23 @@ while run:
     dy = constants.SPEED
 
 
-  player.move(dx, dy)
+  screen_scroll = player.move(dx, dy)
 
+  world.update(screen_scroll)
   for enemy in enemy_list:
+    enemy.ai(screen_scroll)
     enemy.update()
   player.update()
   arrow = bow.update(player)
   if arrow:
     arrow_group.add(arrow)
   for arrow in arrow_group:
-    damage, damage_pos = arrow.update(enemy_list)
+    damage, damage_pos = arrow.update(screen_scroll, enemy_list)
     if damage:
       damage_text = DamageText(damage_pos.centerx, damage_pos.y, str(damage), constants.RED)
       damage_text_group.add(damage_text)
   damage_text_group.update()
-  item_group.update(player)
+  item_group.update(screen_scroll, player)
 
   world.draw(screen)
   for enemy in enemy_list:
