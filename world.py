@@ -49,7 +49,7 @@ class World():
                     self.character_list.append(enemy)
                     tile_data[0] = tile_list[0]
 
-                # add image data to main tiles list
+
                 if tile >= 0:
                     self.map_tiles.append(tile_data)
 
