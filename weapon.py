@@ -52,7 +52,7 @@ class Arrow(pygame.sprite.Sprite):
     self.dy = -(math.sin(math.radians(self.angle)) * constants.ARROW_SPEED)
 
 
-  def update(self,screen_scroll, enemy_list):
+  def update(self,screen_scroll,obstacle_tiles, enemy_list):
     damage = 0
     damage_pos = None
 
@@ -68,6 +68,7 @@ class Arrow(pygame.sprite.Sprite):
         damage = 10 + random.randint(-5, 5)
         damage_pos = enemy.rect
         enemy.health -= damage
+        enemy.hit = True
         self.kill()
         break
 
