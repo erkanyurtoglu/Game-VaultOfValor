@@ -5,6 +5,7 @@ from character import Character
 from weapon import Weapon
 from items import Item
 from world import World
+from button import Button
 
 pygame.init()
 
@@ -14,7 +15,9 @@ pygame.display.set_caption("Vault Of Valor")
 clock = pygame.time.Clock()
 
 level = 1
-start_intro = True
+start_game = False
+pause_game = False
+start_intro = False
 scren_scroll = [0, 0]
 
 moving_left = False
@@ -29,6 +32,10 @@ def scale_img(image, scale):
   h = image.get_height()
   return pygame.transform.scale(image, (w * scale, h * scale))
 
+start_img = scale_img(pygame.image.load("assets/images/buttons/button_start.png").convert_alpha(), constants.BUTTON_SCALE)
+exit_img = scale_img(pygame.image.load("assets/images/buttons/button_exit.png").convert_alpha(), constants.BUTTON_SCALE)
+restart_img = scale_img(pygame.image.load("assets/images/buttons/button_restart.png").convert_alpha(), constants.BUTTON_SCALE)
+resume_img = scale_img(pygame.image.load("assets/images/buttons/button_resume.png").convert_alpha(), constants.BUTTON_SCALE)
 
 heart_empty = scale_img(pygame.image.load("assets/images/items/heart_empty.png").convert_alpha(), constants.ITEM_SCALE)
 heart_half = scale_img(pygame.image.load("assets/images/items/heart_half.png").convert_alpha(), constants.ITEM_SCALE)
@@ -192,25 +199,48 @@ for item in world.item_list:
 intro_fade = ScreenFade(1, constants.BLACK, 4)
 death_fade = ScreenFade(2, constants.PINK, 4)
 
+start_button = Button(constants.SCREEN_WIDTH // 2 - 145, constants.SCREEN_HEIGHT // 2 - 150, start_img)
+exit_button = Button(constants.SCREEN_WIDTH // 2 - 110, constants.SCREEN_HEIGHT // 2 + 50, exit_img)
+restart_button = Button(constants.SCREEN_WIDTH // 2 - 175, constants.SCREEN_HEIGHT // 2 - 50, restart_img)
+resume_button = Button(constants.SCREEN_WIDTH // 2 - 175, constants.SCREEN_HEIGHT // 2 - 150, resume_img)
+
 
 run = True
 while run:
 
 
   clock.tick(constants.FPS)
-  screen.fill(constants.BG)
 
-  if player.alive:
-    dx = 0
-    dy = 0
-    if moving_right == True:
-      dx = constants.SPEED
-    if moving_left == True:
-      dx = -constants.SPEED
-    if moving_up == True:
-      dy = -constants.SPEED
-    if moving_down == True:
-      dy = constants.SPEED
+
+  if start_game == False:
+    screen.fill(constants.MENU_BG)
+    if start_button.draw(screen):
+      start_game = True
+      start_intro = True
+    if exit_button.draw(screen):
+      run = False
+  else:
+    if pause_game == True:
+      screen.fill(constants.MENU_BG)
+      if resume_button.draw(screen):
+        pause_game = False
+      if exit_button.draw(screen):
+        run = False
+    else:
+      screen.fill(constants.BG)
+
+      if player.alive:
+        #calculate player movement
+        dx = 0
+        dy = 0
+        if moving_right == True:
+          dx = constants.SPEED
+        if moving_left == True:
+          dx = -constants.SPEED
+        if moving_up == True:
+          dy = -constants.SPEED
+        if moving_down == True:
+          dy = constants.SPEED
 
     screen_scroll, level_complete = player.move(dx, dy, world.obstacle_tiles, world.exit_tile)
 
@@ -278,26 +308,30 @@ while run:
       start_intro = False
       intro_fade.fade_counter = 0
 
+
   if player.alive == False:
     if death_fade.fade():
-      death_fade.fade_counter = 0
-      start_intro = True
-      world_data = reset_level()
-      with open(f"levels/level{level}_data.csv", newline="") as csvfile:
-        reader = csv.reader(csvfile, delimiter = ",")
-        for x, row in enumerate(reader):
-          for y, tile in enumerate(row):
-            world_data[x][y] = int(tile)
-      world = World()
-      world.process_data(world_data, tile_list, item_images, mob_animations)
-      temp_score = player.score
-      player = world.player
-      player.score = temp_score
-      enemy_list = world.character_list
-      score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
-      item_group.add(score_coin)
-      for item in world.item_list:
-        item_group.add(item)
+      if restart_button.draw(screen):
+        death_fade.fade_counter = 0
+        start_intro = True
+        world_data = reset_level()
+
+        with open(f"levels/level{level}_data.csv", newline="") as csvfile:
+          reader = csv.reader(csvfile, delimiter=",")
+          for x, row in enumerate(reader):
+            for y, tile in enumerate(row):
+              world_data[x][y] = int(tile)
+        world = World()
+        world.process_data(world_data, tile_list, item_images, mob_animations)
+        temp_score = player.score
+        player = world.player
+        player.score = temp_score
+        enemy_list = world.character_list
+        score_coin = Item(constants.SCREEN_WIDTH - 115, 23, 0, coin_images, True)
+        item_group.add(score_coin)
+
+        for item in world.item_list:
+          item_group.add(item)
 
 
   for event in pygame.event.get():
@@ -313,6 +347,9 @@ while run:
         moving_up = True
       if event.key == pygame.K_s:
         moving_down = True
+      if event.key == pygame.K_ESCAPE:
+        pause_game = True
+
 
     if event.type == pygame.KEYUP:
       if event.key == pygame.K_a:
