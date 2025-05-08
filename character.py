@@ -81,7 +81,7 @@ class Character():
       if self.rect.top < constants.SCROLL_THRESH:
         screen_scroll[1] = constants.SCROLL_THRESH - self.rect.top
         self.rect.top = constants.SCROLL_THRESH
-    return screen_scroll
+    return screen_scroll, level_complete
 
   def ai(self, player, obstacle_tiles,screen_scroll, fireball_image):
     clipped_line = ()
@@ -98,8 +98,7 @@ class Character():
     for obstacle in obstacle_tiles:
       if obstacle[1].clipline(line_of_sight):
         clipped_line = obstacle[1].clipline(line_of_sight)
-    dist = math.sqrt(
-      ((self.rect.centerx - player.rect.centerx) ** 2) + ((self.rect.centery - player.rect.centery) ** 2))
+    dist = math.sqrt(((self.rect.centerx - player.rect.centerx) ** 2) + ((self.rect.centery - player.rect.centery) ** 2))
     if not clipped_line and dist > constants.RANGE:
       if self.rect.centerx > player.rect.centerx:
         ai_dx = -constants.ENEMY_SPEED
@@ -136,6 +135,8 @@ class Character():
 
       if (pygame.time.get_ticks() - self.last_hit > stun_cooldown):
         self.stunned = False
+
+    return fireball
 
   def update(self):
 

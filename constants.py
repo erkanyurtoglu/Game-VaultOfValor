@@ -20,6 +20,8 @@ RANGE = 50
 ATTACK_RANGE = 60
 
 WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+PINK = (235, 65, 54)
 RED = (255, 0, 0)
 BG = (40, 25, 25)
 PANEL = (50, 50, 50)
