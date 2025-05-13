@@ -84,7 +84,7 @@ class Character():
     return screen_scroll, level_complete
 
   def ai(self, player, obstacle_tiles,screen_scroll, fireball_image):
-    clipped_line = ()
+    clipped_line = ""
     stun_cooldown = 100
     ai_dx = 0
     ai_dy = 0
