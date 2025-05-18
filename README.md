@@ -4,8 +4,12 @@
 **Vault of Valor**, piksel sanat tarzında tasarlanmış, aksiyon dolu bir 2D macera oyunudur. Cesur karakterimizle zindanları keşfedin, düşmanları alt edin ve hazineleri toplayarak seviyeleri geçin!
 
 
+
+
 -- Ana Menü 
 ![main](https://github.com/user-attachments/assets/1053daba-4fd2-471c-a195-b1af8649e443)
+
+
 
 
 ## 🎮 Oynanış
@@ -19,7 +23,9 @@ Oyunda, karakterinizle tehlikeli zindanlarda ilerleyerek düşmanları yok etmey
 
 
 *Oyun içi ekran görüntüsü ![game](https://github.com/user-attachments/assets/5ad76c63-4a20-4bf8-81f4-64d3852b1904)
-ü - Seviye 1*
+
+
+- Seviye 1*
 
 
 ## 🚀 Kurulum
